@@ -40,6 +40,31 @@ static int receive_scte104_packet(int connfd)
         return -1;
     }
 
+    if (!scte104s_validate(msg, len)) {
+        fprintf(stderr, "invalid scte104 message \n");
+        return -1;
+    }
+
+    uint16_t size = 0;
+    uint8_t *p = scte104s_get_data(msg, &size);
+    if(scte104o_get_opid(p) == SCTE104_OPID_INIT_REQUEST_DATA) {
+        uint8_t msg_number = 0;
+        memset(msg, 0, sizeof(msg));
+        len = SCTE104S_HEADER_SIZE;
+
+        scte104_set_opid(msg, SCTE104_OPID_INIT_RESPONSE_DATA);
+        scte104_set_size(msg, len);
+        scte104s_set_result(msg, 100);
+        scte104s_set_result_extension(msg, 0xffff);
+        scte104s_set_protocol(msg, 0);
+        scte104s_set_as_index(msg, 0);
+        scte104s_set_message_num(msg, msg_number);
+        scte104s_set_dpi_pid_index(msg, 0);
+
+        if( send(connfd, msg, len, 0) < 0)
+            fprintf( stderr, "Failed to send scte 104 reply \n" );
+    }
+
     return 0;
 }
 

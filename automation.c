@@ -36,24 +36,16 @@ int main(int argc, char *argv[])
 {
     uint8_t msg[500];
     uint8_t msg_number = 0;
-    int len = SCTE104M_HEADER_SIZE + SCTE104T_HEADER_SIZE + 1 + SCTE104O_HEADER_SIZE;
+    int len = SCTE104S_HEADER_SIZE;
 
-    scte104_set_opid(msg, SCTE104_OPID_MULTIPLE);
-    scte104o_set_data_length(msg, len);
-    scte104m_set_protocol(msg, 0);
-    scte104m_set_as_index(msg, 0);
-    scte104m_set_message_number(msg, msg_number++);
-    scte104m_set_dpi_pid_index(msg, 0);
-    scte104m_set_scte35_protocol(msg, 0);
-
-    uint8_t *ts = scte104m_get_timestamp(msg);
-    scte104t_set_type(ts, SCTE104T_TYPE_NONE);
-
-    scte104m_set_num_ops(msg, 1);
-    
-    uint8_t *op = ts + 2;
-    scte104o_set_opid(op, SCTE104_OPID_INIT_REQUEST_DATA);
-    scte104o_set_data_length(op, 0);
+    scte104_set_opid(msg, SCTE104_OPID_INIT_REQUEST_DATA);
+    scte104_set_size(msg, len);
+    scte104s_set_result(msg, 100);
+    scte104s_set_result_extension(msg, 0xffff);
+    scte104s_set_protocol(msg, 0);
+    scte104s_set_as_index(msg, 0);
+    scte104s_set_message_num(msg, msg_number);
+    scte104s_set_dpi_pid_index(msg, 0);
 
     struct sockaddr_in server_addr;
     int sockfd;
